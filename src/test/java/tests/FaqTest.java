@@ -20,38 +20,36 @@ public class FaqTest {
     private WebDriver driver;
     private MainPage mainPage;
 
-    private final String browser;
+    private final int questionIndex;
+    private final String expectedAnswer;
 
-    // Список ожидаемых ответов
-    private final String[] expectedAnswers = {
-            "Сутки — 400 рублей. Оплата курьеру — наличными или картой.",
-            "Пока что у нас так: один заказ — один самокат. Если хотите покататься с друзьями, можете просто сделать несколько заказов — один за другим.",
-            "Допустим, вы оформляете заказ на 8 мая. Мы привозим самокат 8 мая в течение дня. Отсчёт времени аренды начинается с момента, когда вы оплатите заказ курьеру. Если мы привезли самокат 8 мая в 20:30, суточная аренда закончится 9 мая в 20:30.",
-            "Только начиная с завтрашнего дня. Но скоро станем расторопнее.",
-            "Пока что нет! Но если что-то срочное — всегда можно позвонить в поддержку по красивому номеру 1010.",
-            "Самокат приезжает к вам с полной зарядкой. Этого хватает на восемь суток — даже если будете кататься без передышек и во сне. Зарядка не понадобится.",
-            "Да, пока самокат не привезли. Штрафа не будет, объяснительной записки тоже не попросим. Все же свои.",
-            "Да, обязательно. Всем самокатов! И Москве, и Московской области.",
-    };
-
-    public FaqTest(String browser) {
-        this.browser = browser;
+    public FaqTest(int questionIndex, String expectedAnswer) {
+        this.questionIndex = questionIndex;
+        this.expectedAnswer = expectedAnswer;
     }
 
     @Parameterized.Parameters
-    public static Collection<Object[]> browsers() {
-        return Arrays.asList(new Object[][]{
-                {"chrome"},
-                {"firefox"}
+    public static Collection<Object[]> testData() {
+        return Arrays.asList(new Object[][]{ // Список ожидаемых ответов и их индекс
+                {0, "Сутки — 400 рублей. Оплата курьеру — наличными или картой."},
+                {1, "Пока что у нас так: один заказ — один самокат. Если хотите покататься с друзьями, можете просто сделать несколько заказов — один за другим."},
+                {2, "Допустим, вы оформляете заказ на 8 мая. Мы привозим самокат 8 мая в течение дня. Отсчёт времени аренды начинается с момента, когда вы оплатите заказ курьеру. Если мы привезли самокат 8 мая в 20:30, суточная аренда закончится 9 мая в 20:30."},
+                {3, "Только начиная с завтрашнего дня. Но скоро станем расторопнее."},
+                {4, "Пока что нет! Но если что-то срочное — всегда можно позвонить в поддержку по красивому номеру 1010."},
+                {5, "Самокат приезжает к вам с полной зарядкой. Этого хватает на восемь суток — даже если будете кататься без передышек и во сне. Зарядка не понадобится."},
+                {6, "Да, пока самокат не привезли. Штрафа не будет, объяснительной записки тоже не попросим. Все же свои."},
+                {7, "Да, обязательно. Всем самокатов! И Москве, и Московской области."}
         });
     }
 
     @Before
     public void setUp() {
-        if (browser.equals("chrome")) {
+        String browser = System.getProperty("browser", "chrome");
+
+        if (browser.equalsIgnoreCase("chrome")) {
             WebDriverManager.chromedriver().setup();
             driver = new ChromeDriver();
-        } else if (browser.equals("firefox")) {
+        } else if (browser.equalsIgnoreCase("firefox")) {
             WebDriverManager.firefoxdriver().setup();
             driver = new FirefoxDriver();
         }
@@ -63,19 +61,15 @@ public class FaqTest {
 
     @Test
     public void testFaqDropdownDisplaysCorrectAnswerText() {
-        for (int i = 0; i < expectedAnswers.length; i++) {
-            mainPage.clickFaqQuestion(i); // Кликаем по вопросу с индексом i
+        mainPage.clickFaqQuestion(questionIndex); // Кликаем по вопросу
 
-            // Получаем текст ответа и сравниваем с ожидаемым
-            String actualAnswer = mainPage.getFaqAnswerText(i);
-            assertEquals("Текст ответа не совпадает для вопроса №" + (i + 1), expectedAnswers[i], actualAnswer);
-        }
-
-        System.out.println("Тест пройден успешно, братик, можно закуривать сигу!");
+        // Получаем текст ответа и сравниваем с ожидаемым
+        String actualAnswer = mainPage.getFaqAnswerText(questionIndex);
+        assertEquals("Текст ответа не совпадает для вопроса №" + (questionIndex + 1), expectedAnswer, actualAnswer);
     }
 
     @After
     public void tearDown() {
-        driver.quit();
+            driver.quit();
     }
 }

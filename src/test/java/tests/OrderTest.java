@@ -25,7 +25,6 @@ public class OrderTest {
     private OrderStatusPage orderStatusPage;
 
     // Параметры для теста
-    private final String browser;
     private final String buttonPosition;
     private final String firstName;
     private final String lastName;
@@ -35,8 +34,7 @@ public class OrderTest {
     private final String expectedStatus;
     private final String color;
 
-    public OrderTest(String browser, String buttonPosition, String firstName, String lastName, String address, String phone, String comment, String expectedStatus, String color) {
-        this.browser = browser;
+    public OrderTest (String buttonPosition, String firstName, String lastName, String address, String phone, String comment, String expectedStatus, String color) {
         this.buttonPosition = buttonPosition;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -51,15 +49,15 @@ public class OrderTest {
     @Parameterized.Parameters
     public static Collection<Object[]> testData() {
         return Arrays.asList(new Object[][]{
-                {"chrome", "top", "Иван", "Иванов", "ул. Пушкина", "+71234567890", "Комментарий 1", "Заказ оформлен", "grey"},
-                {"chrome", "bot", "Алексей", "Смирнов", "ул. Лермонтова", "+79876543210", "Комментарий 2", "Заказ оформлен", "black"},
-                {"firefox", "top", "Иван", "Иванов", "ул. Пушкина", "+71234567890", "Комментарий 1", "Заказ оформлен", "grey"},
-                {"firefox", "bot", "Алексей", "Смирнов", "ул. Лермонтова", "+79876543210", "Комментарий 2", "Заказ оформлен", "black"},
+                {"top", "Иван", "Иванов", "ул. Пушкина", "+71234567890", "Комментарий 1", "Заказ оформлен", "grey"},
+                {"bot", "Алексей", "Смирнов", "ул. Лермонтова", "+79876543210", "Комментарий 2", "Заказ оформлен", "black"},
         });
     }
 
     @Before
     public void setUp() {
+        String browser = System.getProperty("browser", "chrome");
+
         if (browser.equals("chrome")) {
             WebDriverManager.chromedriver().setup();
             driver = new ChromeDriver();
@@ -76,7 +74,7 @@ public class OrderTest {
         orderStatusPage = new OrderStatusPage(driver);
     }
 
-    // Основной тест который проходит по всему флоу заказа и проверяет статус
+    // Основной тест, который проходит по всему флоу заказа и проверяет статус
     @Test
     public void testOrderFlow() {
         mainPage.clickOrderButton(buttonPosition);
@@ -86,13 +84,10 @@ public class OrderTest {
         // Проверяем смогли ли заказать самокат
         String statusText = orderStatusPage.getStatusInfo();
         assertTrue("Не получилось заказать", statusText.contains(expectedStatus));
-
-        System.out.println("Тест пройден успешно, братик, иди чайку завари!");
     }
 
     @After
     public void tearDown() {
-            driver.quit();
-        }
+        driver.quit();
     }
-
+}
